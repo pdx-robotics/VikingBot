@@ -1,116 +1,198 @@
-# VikingBot.py by Chana
+# Title: VikingBot.py
+# Author: Aaron Chan (Chana030102) & Dustin Schnelle (schnelled)
+# Date: 1/24/2019
+# Note: this is the test version of the VikingBot (VikingBot.py)
 #
 # Viking Robotics Society - Discord Chatbot
-# =====================
-# Discord event-defines for commands
+# This Discord Chatbot was created to support the Viking Robotics Society (VRS)
+# ==============================================================================
+# Events:
+#           -> on_ready():  discord event for when the bot is ready to assist the
+#                           server.
+#           -> on_member_join(member): discord event for greeting people when
+#                           they join the server.
+#
+# General Commands:
+#           -> ping(ctx):   discord command for testing purposes.
+#           -> help(ctx):   discord command to display all of the support commands.
+#           -> about(ctx):  discord command to display information about the
+#                           discord bot.
+#           -> info(ctx):   discord command to display general information about
+#                           the Vikings Robotic Society (VRS).
+#
+# Admin Commands:
+#           -> linkupdate(ctx, term, year, new_link): discord command for admin
+#                           usage to update the availability poll link on discord.
+#
+#===============================================================================
 
 import discord
-import asyncio
 from discord.ext import commands
-from discord.ext.commands import bot
 
 import vrs_utils
-import vrs_text
 import vrs_ids
+import vrs_text
 
-vrs_utils.setup() # sets up logging of errors and print statements
-bot = commands.Bot(command_prefix='$')
-bot.remove_command('help') # remove default help command
+#===============================================================================
+# Initial setup
+#===============================================================================
 
+# Setup the logging of errors and print statements to log file
+vrs_utils.setup()
+# Create an instance of a discord bot
+bot = commands.Bot(command_prefix=vrs_ids.BOT_PREFIX)
+# Remove defualt help command
+bot.remove_command('help')
+
+# VikingBot startup message
 print("\n------\n")
 print(vrs_text.ASCII_ART)
 print("\n------\n")
 print("\nDiscord version: {}".format(discord.__version__))
 print("\n------\n")
 
-# Bot is ready for Discord
+#===============================================================================
+# General events
+#
+# Format of events:
+#   @bot.event
+#   async def <function>():
+#
+# List of events:
+#           -> on_ready(): discord event for when the bot is ready to assist the
+#                          server.
+#           -> on_member_join(member): discord event for greeting people when
+#                          they join the server.
+#
+#===============================================================================
+
+# Register a discord event
 @bot.event
+# Discord bot is ready for server
+## Called when the client is done preparing the data received from Discord
 async def on_ready():
+    # Display bot's login information
     print("Let's build some robots!")
-    print("I am running on "+ bot.user.name)
-    print("With the ID: "+ bot.user.id)
+    print("I am running on " + bot.user.name)
+    print("With the ID: " + bot.user.id)
     print("\n------\n")
 
-# Greet people when they join the server
+# Register a discord event
 @bot.event
+# Greet people when they join the server
 async def on_member_join(member):
+    # Display information about a new member joining the server
     print("\n{} joined the server!".format(member.name))
     print("First time they joined this server was: {}".format(member.joined_at))
 
-    channel_info = bot.get_channel(vrs_ids.ID_TEXT_GENERAL_INFO)
+    # Obtain the general_info and lobby channel ids for greeting message
+    general_info = bot.get_channel(vrs_ids.ID_TEXT_GENERAL_INFO)
     lobby = bot.get_channel(vrs_ids.ID_TEXT_LOBBY)
-    await bot.send_message(lobby, vrs_text.welcome_text.format(member.mention,channel_info.mention))
 
-#=======================================
+    # Send the greeting message for "new join" to the lobby channel
+    await bot.send_message(lobby, vrs_text.welcome_text.format(member.memtion, general_info.memtion))
+
+#===============================================================================
 # General Commands - anyone can use these commands
-#=======================================
-# Ping command
+#
+# Format of Commands:
+#   @bot.command(pass_context=True)
+#   async def <command_name> (ctx, param, *args):
+#
+# List of Commands:
+#           -> ping(ctx):   discord command for testing purposes.
+#           -> help(ctx):   discord command to display all of the support commands.
+#           -> about(ctx):  discord command to display information about the
+#                           discord bot.
+#           -> info(ctx):   discord command to display general information about
+#                           the Vikings Robotic Society (VRS).
+#
+#===============================================================================
+
+# Ping command (for testing)
 @bot.command(pass_context=True)
 async def ping(ctx):
+    # Send back the pong message to the channel
     await bot.say(":ping_pong: {} pong! =D".format(ctx.message.author.mention))
 
-# Display commands supported by this bot
+# Display all of the supported commands
 @bot.command(pass_context=True)
 async def help(ctx):
+    # Sends a list of the commands supported to the channel
     await bot.send_message(ctx.message.channel, vrs_utils.help())
 
 # Information about the bot itself
 @bot.command(pass_context=True)
 async def about(ctx):
+    # Sends information about the bot to the channel
     await bot.send_message(ctx.message.channel, vrs_utils.about())
 
-# Provide information about the club
+# Provide information about the society
 @bot.command(pass_context=True)
 async def info(ctx):
+    # Get the general information
     gen_info = vrs_utils.gen_info()
+    # Get the meeting information
     meetings = vrs_utils.meet_info()
+    # Send the general and meeting information
     await bot.send_message(ctx.message.channel, embed=gen_info)
     await bot.send_message(ctx.message.channel, embed=meetings)
 
-#@bot.command(pass_context=True)
-#async def test(ctx, param, *args):
-    
-
-#=======================================
-# Admin Commands - Only server Admins can use these commands
-#=======================================
-'''
-# Add Tinkering Session Time
-@bot.command(pass_context=True)
-@commands.has_role('Admin')
-async def tinker(ctx, param, *args):
-    if(len(args)<=0):
-        msg = "{} gave param [ {} ] and no arguments".format(ctx.message.author.mention,param)
-    else:
-        listarg = ""
-        for i in args:
-            listarg+="{} ".format(i)
-        msg = "{} gave param [ {} ] and {} arguments: {}".format(ctx.message.author.mention,param,len(args),listarg)
-        
-    await bot.send_message(ctx.message.channel,msg)
-'''    
+#===============================================================================
+# Admin Commands - admins can use these commands
+#
+# Format of Admin Commands:
+#   @bot.command(pass_context=True)
+#   async def <command_name> (ctx, param, *args):
+#       if vrs_id.ADMIN_ID in [x.id for x in ctx.message.author.roles]:
+#           Do admin command
+#       else:
+#           Send non-admin denied message for the command
+#
+# List of Admin Commands:
+#           -> linkupdate(ctx, term, year, new_link): discord command for admin
+#                           usage to update the availability poll link on discord.
+#===============================================================================
 
 # Update Availability poll link
 @bot.command(pass_context=True)
-@commands.has_role('Admin')
-async def linkupdate(ctx, poll_name, new_link):
-    # Update Availability poll link
-    vrs_utils.update_poll_link(poll_name, new_link)
-    await bot.send_message(ctx.message.author, "You updated the availability poll link to {} --> {}".format(poll_name,new_link))
-    
-    # Remove old general info and replace with newer one using new poll link
+async def linkupdate(ctx, term, year, new_link):
+    # Check role of the member for admin
+    if vrs_ids.ID_ADMIN in [x.id for x in ctx.message.author.roles]:
+        # Update Availability poll link
+        vrs_utils.update_poll_link(term, year, new_link)
+        # Send message to admin member about update success
+        await bot.send_message(ctx.message.author, "You updated the availability poll link to {} {} --> {}".format(term, year, new_link))
+    # Otherwise member is not an admin
+    else:
+        # Send message to non-admin that they don't have permission to preform this command
+        await bot.send_message(ctx.message.author, "You can't preform this command. Admin permission needed.")
+
+    # Remove the old general information and replace with the newer one using new poll link
+    # Create an empty character array (string)
     msgs = []
-    channel_info = bot.get_channel(vrs_ids.ID_TEXT_GENERAL_INFO)
-    if channel_info == None:
+    # Obtain the general information channel id
+    general_info = bot.get_channel(vrs_ids.ID_TEXT_GENERAL_INFO)
+
+    # Check if the channel id was obtained
+    if general_info == None:
+        # Display message that the channel couldn't be found
         print("Couldn't find channel with ID {}".format(vrs_ids.ID_TEXT_GENERAL_INFO))
     else:
-        async for x in bot.logs_from(channel_info, limit=2):
-            msgs.append(x)
-        await bot.delete_messages(msgs) 
+        # Obtain the old message to be deleted
+        async for y in bot.logs_from(general_info, limit=2):
+            # Append the current word to the message
+            msgs.append(y)
+        # Delete the old message
+        await bot.delete_messages(msgs)
 
+        # Get the general information
         gen_info = vrs_utils.gen_info()
-        meet_info = vrs_utils.meet_info()
-        await bot.send_message(channel_info, embed=gen_info)
-        await bot.send_message(channel_info, embed=meet_info)
+        # Get the meeting information
+        meetings = vrs_utils.meet_info()
+        # Send the general and meeting information
+        await bot.send_message(general_info, embed=gen_info)
+        await bot.send_message(general_info, embed=meetings)
 
-bot.run(vrs_ids.TOKEN_TESTBOT)
+# Run the discord client
+bot.run(vrs_ids.TOKEN_VIKINGBOT)
