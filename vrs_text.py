@@ -39,7 +39,7 @@ help_text = "$help ==> Show this message\n\
 $about ==> Get information about test bot\n\
 $info ==> Get information about the Viking Robotics Society\n"
 commands_admin = "\n========__Admin Commands__========\n\
-$linkupdate \"link name\" <new_link> \n ==> Update Availability Poll link stored \
+$linkupdate <term> <year> <new_link> \n ==> Update Availability Poll link stored \
 by Viking Bot. Link must start with http://\n"
 
 #=================================================
