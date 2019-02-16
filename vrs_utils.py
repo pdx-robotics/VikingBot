@@ -17,14 +17,16 @@
 #                       availability poll.
 #           -> update_poll_link(name, new_link): Update the poll link information
 #                       in the poll_link text file.
-#           -> add_tinker_time(day, starttime, endtime): Adds a tinker time to
+#           -> add_tinker_time(day, startTime, endTime): Adds a tinker time to
 #                       the tinker_time text file.
+#           -> remove_tinker_time(day, startTime, endTime): Removes a tinker time
+#                       from the tinker_time text file.
 #           -> n_to_day(n): Converts a number representing the day of the week
 #                       into the string representation.
 #           -> day_to_n(day): Converts a day of the week (string) to a number
 #                       representing the day.
 #           -> valid_day(day): Checks the validity of the day of the week.
-#           -> setuptime(time): Formats the time for the tinker time file
+#           -> setup_time(time): Formats the time for the tinker time file
 #                       (tinker_times.txt).
 # Classes:
 #           -> StreamToLogger(object): Class to log messages from standard
@@ -51,8 +53,8 @@ tinkerfile = dir_path + "/Text/tinker_times.txt"
 
 #-------------------------------------------------------------------------------
 # Function:     setup
-# Input:        none
-# Output:       none
+# Input:        None
+# Output:       None
 # Decription:   Setup standard output and standard error messages to print to a
 #               log file.
 #-------------------------------------------------------------------------------
@@ -80,22 +82,32 @@ def setup():
 
 #-------------------------------------------------------------------------------
 # Function:     help
-# Input:        none
+# Input:        -> admin - Boolean value (True if member is an admin)
 # Output:       text - the text output for the help command
-# Decription:   Creates command descriptions for the test bot.
+# Decription:   Creates command descriptions for the discord bot.
 #-------------------------------------------------------------------------------
-def help():
-    # Create the text message for command descriptions
-    text = vrs_text.code_mark
-    text = text + vrs_text.commands_header
-    text = text + vrs_text.help_text
-    text = text + vrs_text.commands_admin
-    text = text + vrs_text.code_mark
-    return text
+def help(admin):
+    # Check for admin status
+    if admin:
+        # Create the text message for command descriptions
+        text = vrs_text.code_mark
+        text = text + vrs_text.commands_header
+        text = text + vrs_text.help_text
+        text = text + vrs_text.commands_admin
+        text = text + vrs_text.code_mark
+        return text
+    # Otherwise not an admin
+    else:
+        # Create the text message for command descriptions
+        text = vrs_text.code_mark
+        text = text + vrs_text.commands_header
+        text = text + vrs_text.help_text
+        text = text + vrs_text.code_mark
+        return text
 
 #-------------------------------------------------------------------------------
 # Function:     about
-# Input:        none
+# Input:        None
 # Output:       text - information about the discord bot
 # Description:  Display information about the discord bot.
 #-------------------------------------------------------------------------------
@@ -106,7 +118,7 @@ def about():
 
 #-------------------------------------------------------------------------------
 # Function:     gen_info (general information)
-# Input:        none
+# Input:        None
 # Output:       embed - Emmbedded information about general information
 # Description:  Create a discord embed class to display the general information
 #               about the Vikings Robotics Society.
@@ -127,7 +139,7 @@ def gen_info():
 
 #-------------------------------------------------------------------------------
 # Function:     meet_info (meeting information)
-# Input:        none
+# Input:        None
 # Output:       embed - Emmbedded information about meeting information
 # Description:  Create a discord embed class to display the meeting information
 #               about the Viking Robotics Society.
@@ -144,9 +156,9 @@ def meet_info():
     # Loop to obtain information about the current tinkering sessions available
     for x in sessions.sessions:
         # Add current tinker time information
-        tinkertimes += "{} form {} to {}\n".format(n_to_day(x.weekday), x.starttime, x.endtime)
+        tinkertimes += "{} from {} to {}\n".format(n_to_day(x.weekday), x.startTime, x.endTime)
     # Add the last time updated information
-    tinkertimes += "\n*Last Updated: {}*".format(sessions.lastupdated)
+    tinkertimes += "\n*Last Updated: {}*".format(sessions.lastUpdated)
     # Embed the tinker time information for the current term
     embed.add_field(name="{} Weekly Tinker Sessions".format(sessions.term), value=tinkertimes, inline=False)
 
@@ -155,7 +167,7 @@ def meet_info():
 
 #-------------------------------------------------------------------------------
 # Function:     get_poll_link
-# Input:        none
+# Input:        None
 # Output:       data - the link for the poll
 # Decription:   Returns with the information about the terms availability poll.
 #-------------------------------------------------------------------------------
@@ -173,9 +185,9 @@ def get_poll_link():
 
 #-------------------------------------------------------------------------------
 # Function:     update_poll_link
-# Input:        name - Name of the current term <Term> <Year>
-#               new_link - URL link of the new poll
-# Output:       none
+# Input:        -> name - Name of the current term <Term> <Year>
+#               -> new_link - URL link of the new poll
+# Output:       None
 # Definition:   Update the poll link information in the poll_link text file.
 #-------------------------------------------------------------------------------
 def update_poll_link(term, year, new_link):
@@ -191,19 +203,31 @@ def update_poll_link(term, year, new_link):
 
 #-------------------------------------------------------------------------------
 # Function:     add_tinker_time
-# Input:        day - String representing the day of the week
-#               starttime - Starting time of the tinker session (Military time)
-#               endtime - End time of the tinker session (Military time)
+# Input:        -> day - String representing the day of the week
+#               -> startTime - Starting time of the tinker session (Military time)
+#               -> endTime - End time of the tinker session (Military time)
 # Output:       None
 # Definition:   Adds a tinker time to the tinker_time text file.
 #-------------------------------------------------------------------------------
-def add_tinker_time(day, starttime, endtime):
+def add_tinker_time(day, startTime, endTime):
     # Add the tinkering session to the events class
-    sessions.add(day_to_n(day), setuptime(starttime), setuptime(endtime))
+    sessions.add(day_to_n(day), setup_time(startTime), setup_time(endTime))
+
+#-------------------------------------------------------------------------------
+# Function:     remove_tinker_time
+# Input:        -> day - String representing the day of the week
+#               -> startTime - Starting time of the tinker session (Military time)
+#               -> endTime - End time of the tinker session (Military time)
+# Output:       None
+# Definition:   Removes a tinker time from the tinker_time text file.
+#-------------------------------------------------------------------------------
+def remove_tinker_time(day, startTime, endTime):
+    # Remove the tinkering session to the event class
+    sessions.remove(day_to_n(day), setup_time(startTime), setup_time(endTime))
 
 #-------------------------------------------------------------------------------
 # Function:     n_to_day
-# Input:        n - the number representing the day of the week
+# Input:        -> n - the number representing the day of the week
 # Output:       (String) - day of the week
 # Definition:   Converts a number representing the day of the week into the
 #               string representation.
@@ -234,7 +258,7 @@ def n_to_day(n):
 
 #-------------------------------------------------------------------------------
 # Function:     day_to_n
-# Input:        day - String of the day of the week
+# Input:        -> day - String of the day of the week
 # Output:       n - The number representation of the day
 # Definition:   Converts a day of the week (string) to a number representing the
 #               day.
@@ -265,8 +289,8 @@ def day_to_n(day):
 
 #-------------------------------------------------------------------------------
 # Function:     valid_day
-# Input:        day - String representing the day of the week
-# Output:       Boolean value for whether the day is valid
+# Input:        -> day - String representing the day of the week
+# Output:       Boolean - is the day valid
 # Definition:   Checks the validity of the day of the week.
 #-------------------------------------------------------------------------------
 def valid_day(day):
@@ -297,12 +321,12 @@ def valid_day(day):
         return False
 
 #-------------------------------------------------------------------------------
-# Function:     setuptime
+# Function:     setup_time
 # Input:        -> time - Time to format for tinker time file
-# Output:       Formated time
+# Output:       text - Formated time
 # Definition:   Formats the time for the tinker time file (tinker_times.txt)
 #-------------------------------------------------------------------------------
-def setuptime(time):
+def setup_time(time):
     # Format the time
     # 1am (1:00)
     if time == "1" or time == "01" or time == "1am":
@@ -396,9 +420,9 @@ def setuptime(time):
 class StreamToLogger(object):
     #---------------------------------------------------------------------------
     # Function:     initialize
-    # Input:        logger -
-    #               log_level -
-    # Ouput:        none
+    # Input:        -> logger -
+    #               -> log_level -
+    # Ouput:        None
     # Definition:   Initializes the StreamToLogger class object.
     #---------------------------------------------------------------------------
     def __init__(self, logger, log_level=logging.INFO):
@@ -409,8 +433,8 @@ class StreamToLogger(object):
 
     #---------------------------------------------------------------------------
     # Function:     write
-    # Input:        buf - the buffer storing the message for the log file
-    # Output:       none
+    # Input:        -> buf - the buffer storing the message for the log file
+    # Output:       None
     # Definition:   Writes the message the terminal and the log file.
     #---------------------------------------------------------------------------
     def write(self, buf):
@@ -420,8 +444,8 @@ class StreamToLogger(object):
 
     #---------------------------------------------------------------------------
     # Function:     flush
-    # Input:        none
-    # Output:       none
+    # Input:        None
+    # Output:       None
     # Definition:   Flushes the log buffer used by the write function.
     #---------------------------------------------------------------------------
     def flush(self):

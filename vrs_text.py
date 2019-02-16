@@ -40,7 +40,12 @@ $about ==> Get information about test bot\n\
 $info ==> Get information about the Viking Robotics Society\n"
 commands_admin = "\n========__Admin Commands__========\n\
 $linkupdate <term> <year> <new_link> \n ==> Update Availability Poll link stored \
-by Viking Bot. Link must start with http://\n"
+by Viking Bot. Link must start with http://\n\
+$addtinkertime <day_of_the_week> <start_time> <end_time> \n ==> Add tinker time to \
+tinker_time.txt file\n\
+$removetinkertime <day_of_the_week> <start_time> <end_time> \n ==> Remove tinker \
+time from tinker_time.txt file"
+
 
 #=================================================
 # Discord Embed Text - About the Society
