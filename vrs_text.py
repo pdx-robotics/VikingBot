@@ -33,19 +33,36 @@ ASCII_ART = " __      ___ _    _          \n\
 #=================================================
 # Help Command Text
 #=================================================
-code_mark = "```"
-commands_header = "========__Viking Bot Commands__========\n"
-help_text = "$help ==> Show this message\n\
-$about ==> Get information about test bot\n\
-$info ==> Get information about the Viking Robotics Society\n"
-commands_admin = "\n========__Admin Commands__========\n\
-$linkupdate <term> <year> <new_link> \n ==> Update Availability Poll link stored \
-by Viking Bot. Link must start with http://\n\
-$addtinkertime <day_of_the_week> <start_time> <end_time> \n ==> Add tinker time to \
-tinker_time.txt file\n\
-$removetinkertime <day_of_the_week> <start_time> <end_time> \n ==> Remove tinker \
-time from tinker_time.txt file"
-
+helpLess = "Show this message"
+helpMore = "Provides more information about the command\n\
+command (optional) - More information about the specific command"
+aboutLess = "Get information about bot"
+aboutMore = "Provides the current version of the bot and it's purpose"
+infoLess = "Get information about the Viking Robotics Society"
+infoMore = "Information about what the Viking Robotics Society does. Provides \
+contact information, website, how to join, and more resources. Also displays \
+current VRS meeting information."
+admincom = "The list of commands below require admin privileges"
+linkupdateLess = "Update Availability Poll link stored by Viking Bot. \
+Link must start with http://"
+linkupdateMore = "Update Availability Poll link stored by Viking Bot. \
+Link must start with http://\n\
+term - The term of the available poll\n\
+year - The year of the available poll\n\
+link - The link for the available poll\n"
+addtinkertimeLess = "Add tinker time"
+addtinkertimeMore = "Add tinker time to the tinker_time.txt file\n\
+day - Day of the tinker session (Ex. Monday)\n\
+start - Start time of the tinker session (Format XX:XX)\n\
+end - End time of the tinker session (Format XX:XX) \n"
+removetinkertimeLess = "Remove tinker time"
+removetinkertimeMore = "Remove tinker time from the tinker_time.txt file\n\
+day - Day of the tinker session (Ex. Monday)\n\
+start - Start time of the tinker session (Format XX:XX)\n\
+end - End time of the tinker session (Format XX:XX)\n"
+membercountLess = "Display number of members with defined roles"
+membercountMore = "Display number of members with the following roles:\n\
+Member, Admin, Lab Access, Aquanautics, Terranuatics, & Aeronautics"
 
 #=================================================
 # Discord Embed Text - About the Society
@@ -53,7 +70,7 @@ time from tinker_time.txt file"
 footer = "Viking Robotics Society - Portland State University"
 
 title = "Viking Robotics Society"
-description = "We are the Robotics Club at Portland State, open for the community to join us."
+description = "We are the Robotics Society at Portland State, open for the community to join us."
 description2 = "Teach robotics and engineering industry skills through projects."
 email = "robotics@pdx.edu"
 website = "http://robotics.ece.pdx.edu"

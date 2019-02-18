@@ -23,6 +23,13 @@
 # Admin Commands:
 #           -> linkupdate(ctx, term, year, new_link): discord command for admin
 #                           usage to update the availability poll link on discord.
+#           -> addtinkertime(ctx, day, start, end): add tinkering time to
+#                           tinker_times.txt file.
+#           -> removetinkertime(ctx, day, start, end): remove tinkering time from
+#                           tinker_times.txt file.
+#           -> membercount(ctx): obtain the member count for the following roles
+#                           (Member, Admin, Aquanautics, Terranuatics, Aeronuatics,
+#                           Lab Access)
 #
 #===============================================================================
 
@@ -48,8 +55,13 @@ if len(sys.argv) != 2:
 if sys.argv[1] == '-t':
     # Initialize bot token for test server
     token = vrs_ids.TOKEN_TESTBOT
-    # Initialize admin id for the test server
+    # Initialize role ids for the test server
     admin_id = vrs_ids.ID_ADMIN_TEST
+    member_id = vrs_ids.ID_MEMBER_TEST
+    aqua_id = vrs_ids.ID_AQUA_TEST
+    terra_id = vrs_ids.ID_TERRA_TEST
+    aero_id = vrs_ids.ID_AERO_TEST
+    lab_id = vrs_ids.ID_LAB_ACCESS_TEST
     # Initialize the used channel ids for the test server
     general_info_id = vrs_ids.ID_TEXT_GENERAL_INFO_TEST
     lobby_id = vrs_ids.ID_TEXT_LOBBY_TEST
@@ -57,8 +69,13 @@ if sys.argv[1] == '-t':
 elif sys.argv[1] == '-r':
     # Initialize bot token for assisting Viking Robotics Society server
     token = vrs_ids.TOKEN_VIKINGBOT
-    # Initialize admin id for the Viking Robotics Society server
+    # Initialize role ids for the Viking Robotics Society server
     admin_id = vrs_ids.ID_ADMIN
+    member_id = vrs_ids.ID_MEMBER
+    aqua_id = vrs_ids.ID_AQUA
+    terra_id = vrs_ids.ID_TERRA
+    aero_id = vrs_ids.ID_AERO
+    lab_id = vrs_ids.ID_LAB_ACCESS
     # Initialize the used channel ids for the Viking Robotics Society server
     general_info_id = vrs_ids.ID_TEXT_GENERAL_INFO
     lobby_id = vrs_ids.ID_TEXT_LOBBY
@@ -148,15 +165,59 @@ async def ping(ctx):
 
 # Display all of the supported commands
 @bot.command(pass_context=True)
-async def help(ctx):
-    # Check for admin member(role)
-    if admin_id in [x.id for x in ctx.message.author.roles]:
-        # Sends a list of all commands supported to the channel
-        await bot.send_message(ctx.message.channel, vrs_utils.help(True))
-    # Otherwise not admin member(role)
+async def help(ctx, command = ""):
+    print(command)
+    # Check if command is empty
+    if not command:
+        # Check for admin member(role)
+        if admin_id in [x.id for x in ctx.message.author.roles]:
+            # Get the help information
+            helpInfo = vrs_utils.general_help()
+            # Sends a list of basic commands supported to the channel
+            await bot.send_message(ctx.message.channel, embed=helpInfo)
+            # Get the help information for admin member
+            helpInfo = vrs_utils.admin_help()
+            # Send a list of admin command in direct message
+            await bot.send_message(ctx.message.author, embed=helpInfo)
+        # Otherwise not admin member(role)
+        else:
+            # Get the help information
+            helpInfo = vrs_utils.general_help()
+            # Send a list of basic commands supported to the channel
+            await bot.send_message(ctx.message.channel, embed=helpInfo)
     else:
-        # Send a list of basic commands supported to the channel
-        await bot.send_message(ctx.message.channel, vrs_utils.help(False))
+        # Check for admin member(role)
+        if admin_id in [x.id for x in ctx.message.author.roles]:
+            # Check the admin command
+            # Admin commands
+            if command == "updatelink" or command == "addtinkertime" or command == "removetinkertime" or command == "membercount":
+                # Get the command information
+                helpInfo = vrs_utils.admin_help(command)
+                # Send a direct message about the command
+                await bot.send_message(ctx.message.author, embed=helpInfo)
+            # General help commands
+            elif command == "help" or command == "about" or command == "info":
+                # Get the command information
+                helpInfo = vrs_utils.general_help(command)
+                # Send a message about the command
+                await bot.send_message(ctx.message.channel, embed=helpInfo)
+            # Otherwise invalid command
+            else:
+                # Send a invalid help command
+                await bot.send_message(ctx.message.author, "Invalid admin command!")
+        # Otherwise not admin member(role)
+        else:
+            # Check the command
+            # General help commands
+            if command == "help" or command == "about" or command == "info":
+                # Get the command information
+                helpInfo = vrs_utils.general_help(command)
+                # Send a message about the command
+                await bot.send_message(ctx.message.channel, embed=helpInfo)
+            # Otherwise invalid command
+            else:
+                # Send a invalid help command
+                await bot.send_message(ctx.message.channel, "Invalid command!")
 
 # Information about the bot itself
 @bot.command(pass_context=True)
@@ -189,6 +250,13 @@ async def info(ctx):
 # List of Admin Commands:
 #           -> linkupdate(ctx, term, year, new_link): discord command for admin
 #                           usage to update the availability poll link on discord.
+#           -> addtinkertime(ctx, day, start, end): add tinkering time to
+#                           tinker_times.txt file.
+#           -> removetinkertime(ctx, day, start, end): remove tinkering time from
+#                           tinker_times.txt file.
+#           -> membercount(ctx): obtain the member count for the following roles
+#                           (Member, Admin, Aquanautics, Terranuatics, Aeronuatics,
+#                           Lab Access)
 #===============================================================================
 
 # Update Availability poll link
@@ -266,6 +334,52 @@ async def removetinkertime(ctx, day, startTime, endTime):
         else:
             # Send message to admin member that the day for the tinker time is not valid
             await bot.send_message(ctx.message.author, "Error: Invalid day provided, please check your spelling.")
+    # Otherwise member is not an admin
+    else:
+        # Send permission denied message to non-admin member
+        await bot.send_message(ctx.message.author, "You can't preform this command. Admin permission needed.")
+
+# Obtain the number of members in the server
+@bot.command(pass_context=True)
+async def membercount(ctx):
+    # Check role of the member for admin permissions
+    if admin_id in [x.id for x in ctx.message.author.roles]:
+        # Declare roles dictionary
+        roles = {"Members" : 0,
+                 "Admins" : 0,
+                 "Lab Access" : 0,
+                 "Aquanautics" : 0,
+                 "Terranuatics" : 0,
+                 "Aeronautics" : 0}
+        # Obtain the server
+        server = ctx.message.server
+
+        # Loop through all of the people in the server
+        for member in server.members:
+            # Check if the current person is a member of VRS
+            if member_id in [y.id for y in member.roles]:
+                roles["Members"] += 1
+            # Check if the current person is an Admin of VRS
+            if admin_id in [y.id for y in member.roles]:
+                roles["Admins"] += 1
+            # Check if the current person has lab access
+            if lab_id in [y.id for y in member.roles]:
+                roles["Lab Access"] += 1
+            # Check if the current person is part of the Aquanautics team
+            if aqua_id in [y.id for y in member.roles]:
+                roles["Aquanautics"] += 1
+            # Check if the current person is part of the Terranuatics team
+            if terra_id in [y.id for y in member.roles]:
+                roles["Terranuatics"] += 1
+            # Check if the current person is a part of the Aeronautics team
+            if aero_id in [y.id for y in member.roles]:
+                roles["Aeronautics"] += 1
+            # Check if the current person has lab access
+
+        # Format the role count information
+        roleInfo = vrs_utils.role_count(roles)
+
+        await bot.send_message(ctx.message.channel, embed=roleInfo)
     # Otherwise member is not an admin
     else:
         # Send permission denied message to non-admin member
