@@ -98,6 +98,5 @@ See our {} channel for more information, or ask for help in this channel and we'
 #=================================================
 # Other Text
 #=================================================
-bot_version = "2019-01-23"
-about = "(Version {}) --- I was made to assist the discord channel for Viking \
-Robotics Society at Portland State University"
+about = "I was made to assist the Discord channel for Viking \
+Robotics Society at Portland State University.  You can find my source code on https://github.com/pdx-robotics/VikingBot"

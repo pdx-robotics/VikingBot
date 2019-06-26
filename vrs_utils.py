@@ -83,106 +83,6 @@ def setup():
     sys.stderr = sl
 
 #-------------------------------------------------------------------------------
-# Function:     general_help
-# Input:        -> command - user provided command
-# Output:       text - the text output for the help general commands.
-# Decription:   Creates general command descriptions for the discord bot.
-#-------------------------------------------------------------------------------
-def general_help(command = ""):
-    print(command)
-    # Check if a user command was provided
-    if command:
-        print(command)
-        # Check which general command was provided
-        # help command
-        if command == "help":
-            # Initialize embed discord object for help command
-            embed = discord.Embed(title="__|---     Help Command     ---|__", color=0x229954)
-            embed.set_footer(text=vrs_text.footer)
-            # Add help command to the embed discord object
-            embed.add_field(name="$help <command>(optional)", value=vrs_text.helpMore , inline=False)
-        # about command
-        if command == "about":
-            # Initialize embed discord object for about command
-            embed = discord.Embed(title="__|---     About Command     ---|__", color=0x229954)
-            embed.set_footer(text=vrs_text.footer)
-            # Add about command to the embed discord object
-            embed.add_field(name="$about", value=vrs_text.aboutMore , inline=False)
-        # info command
-        if command == "info":
-            # Initialize embed discord object for info command
-            embed = discord.Embed(title="__|---     Information Command     ---|__", color=0x229954)
-            embed.set_footer(text=vrs_text.footer)
-            # Add info command to the embed discord object
-            embed.add_field(name="$info", value=vrs_text.infoMore , inline=False)
-    # Otherwise default help command
-    else:
-        # Initialize embed discord object for available commands
-        embed = discord.Embed(title="__|---     Viking Bot Commands     ---|__", color=0x229954)
-        embed.set_footer(text=vrs_text.footer)
-
-        # Add member commands to the embed discord object
-        embed.add_field(name="help <command>(optional)", value=vrs_text.helpLess, inline=False)
-        embed.add_field(name="about", value=vrs_text.aboutLess, inline=False)
-        embed.add_field(name="info", value=vrs_text.infoLess, inline=False)
-
-    # Return the embedded object
-    return embed
-
-#-------------------------------------------------------------------------------
-# Function:     admin_help
-# Input:        -> command - user provided command
-# Output:       text - the text output for the help admin commands.
-# Decription:   Creates admin command descriptions for the discord bot.
-#-------------------------------------------------------------------------------
-def admin_help(command = ""):
-    # Check if admin member provided a command
-    if command:
-        # Check which admin command was provided
-        # updatelink command
-        if command == "updatelink":
-            # Initialize embed discord object for updatelink command
-            embed = discord.Embed(title="__|---     Update Link Command     ---|__", color=0x229954)
-            embed.set_footer(text=vrs_text.footer)
-            # Add updatelink command to the embed discord object
-            embed.add_field(name="$linkupdate <term> <year> <link>", value=vrs_text.linkupdateMore , inline=False)
-        # addtinkertime command
-        if command == "addtinkertime":
-            # Initialize embed discord object for addtinkertime command
-            embed = discord.Embed(title="__|---     Add Tinker Time Command     ---|__", color=0x229954)
-            embed.set_footer(text=vrs_text.footer)
-            # Add addtinkertime command to the embed discord object
-            embed.add_field(name="$addtinkertime <day> <start> <end>", value=vrs_text.addtinkertimeMore , inline=False)
-        # removetinkertime command
-        if command == "removetinkertime":
-            # Initialize embed discord object for removetinkertime command
-            embed = discord.Embed(title="__|---     Remove Tinker Time Command     ---|__", color=0x229954)
-            embed.set_footer(text=vrs_text.footer)
-            # Add removetinkertime command to the embed discord object
-            embed.add_field(name="$removetinkertime <day> <start> <end>", value=vrs_text.removetinkertimeMore , inline=False)
-        # membercount command
-        if command == "membercount":
-            # Initialize embed discord object for membercout command
-            embed = discord.Embed(title="__|---     Member Count Command     ---|___", color=0x229954)
-            embed.set_footer(text=vrs_text.footer)
-            # Add membercount command to the embed discord object
-            embed.add_field(name="$membercout", value=vrs_text.membercountMore , inline=False)
-    # Otherwise default admin help command
-    else:
-        # Initialize embed discord object for available commands
-        embed = discord.Embed(title="__|---     Admin Commands     ---|__", color=0x229954)
-        embed.set_footer(text=vrs_text.footer)
-
-        # Add admin commands to the embed discord object
-        embed.add_field(name="linkupdate <term> <year> <link>", value=vrs_text.linkupdateLess, inline=False)
-        embed.add_field(name="addtinkertime <day> <start> <end>", value=vrs_text.addtinkertimeLess, inline=False)
-        embed.add_field(name="removetinkertime <day> <start> <end>", value=vrs_text.removetinkertimeLess, inline=False)
-        embed.add_field(name="membercount", value=vrs_text.membercountLess, inline=False)
-
-    # Return the embedded object
-    return embed
-
-#-------------------------------------------------------------------------------
 # Function:     about
 # Input:        None
 # Output:       text - information about the discord bot
@@ -190,7 +90,7 @@ def admin_help(command = ""):
 #-------------------------------------------------------------------------------
 def about():
     # Create bot information text
-    text = vrs_text.about.format(vrs_text.bot_version)
+    text = vrs_text.about
     return text
 
 #-------------------------------------------------------------------------------
@@ -222,7 +122,7 @@ def gen_info():
 #               about the Viking Robotics Society.
 #-------------------------------------------------------------------------------
 def meet_info():
-    # Declare varable for tinkertimes
+    # Declare variable for tinkertimes
     tinkertimes = ""
 
     # Initialize embed discord object for general information

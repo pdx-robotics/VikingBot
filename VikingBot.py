@@ -33,16 +33,20 @@
 #
 #===============================================================================
 
-import discord, sys
+import discord, sys, os, inspect
 from discord.ext import commands
 
-import vrs_utils
+sys.path.insert(0,'Include')
+import vrs_utils as utils
 import vrs_ids
-import vrs_text
+import vrs_text 
+import vrs_help
 
 #===============================================================================
 # Initial setup of the Discord chat bot
 #===============================================================================
+
+dir = path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 
 # Check for mode argument
 if len(sys.argv) != 2:
@@ -86,7 +90,8 @@ else:
     sys.exit(0)
 
 # Setup the logging of errors and print statements to log file
-vrs_utils.setup()
+utils.setup()
+vrs_help.help_setup(dir)
 # Create an instance of a discord bot
 bot = commands.Bot(command_prefix=vrs_ids.BOT_PREFIX)
 # Remove defualt help command
@@ -140,6 +145,11 @@ async def on_member_join(member):
     # Send the greeting message for "new join" to the lobby channel
     await bot.send_message(lobby, vrs_text.welcome_text.format(member.mention, general_info.mention))
 
+@bot.event
+async def on_command_error(ctx,error):
+    print(f'Error var: {error}')
+    print(f'ctx var: {ctx}')
+    await reply(error,f'{ctx}. See $help for a list of commands')
 #===============================================================================
 # General Commands - anyone can use these commands
 #
@@ -161,77 +171,31 @@ async def on_member_join(member):
 @bot.command(pass_context=True)
 async def ping(ctx):
     # Send back the pong message to the channel
-    await bot.say(":ping_pong: {} pong! =D".format(ctx.message.author.mention))
+    #await bot.say(":ping_pong: {} pong! =D".format(ctx.message.author.mention))
+    await reply(ctx,f':ping_pong: {ctx.message.author.mention} pong! =D')
 
 # Display all of the supported commands
 @bot.command(pass_context=True)
-async def help(ctx, command = ""):
-    print(command)
-    # Check if command is empty
-    if not command:
-        # Check for admin member(role)
-        if admin_id in [x.id for x in ctx.message.author.roles]:
-            # Get the help information
-            helpInfo = vrs_utils.general_help()
-            # Sends a list of basic commands supported to the channel
-            await bot.send_message(ctx.message.channel, embed=helpInfo)
-            # Get the help information for admin member
-            helpInfo = vrs_utils.admin_help()
-            # Send a list of admin command in direct message
-            await bot.send_message(ctx.message.author, embed=helpInfo)
-        # Otherwise not admin member(role)
-        else:
-            # Get the help information
-            helpInfo = vrs_utils.general_help()
-            # Send a list of basic commands supported to the channel
-            await bot.send_message(ctx.message.channel, embed=helpInfo)
-    else:
-        # Check for admin member(role)
-        if admin_id in [x.id for x in ctx.message.author.roles]:
-            # Check the admin command
-            # Admin commands
-            if command == "updatelink" or command == "addtinkertime" or command == "removetinkertime" or command == "membercount":
-                # Get the command information
-                helpInfo = vrs_utils.admin_help(command)
-                # Send a direct message about the command
-                await bot.send_message(ctx.message.author, embed=helpInfo)
-            # General help commands
-            elif command == "help" or command == "about" or command == "info":
-                # Get the command information
-                helpInfo = vrs_utils.general_help(command)
-                # Send a message about the command
-                await bot.send_message(ctx.message.channel, embed=helpInfo)
-            # Otherwise invalid command
-            else:
-                # Send a invalid help command
-                await bot.send_message(ctx.message.author, "Invalid admin command!")
-        # Otherwise not admin member(role)
-        else:
-            # Check the command
-            # General help commands
-            if command == "help" or command == "about" or command == "info":
-                # Get the command information
-                helpInfo = vrs_utils.general_help(command)
-                # Send a message about the command
-                await bot.send_message(ctx.message.channel, embed=helpInfo)
-            # Otherwise invalid command
-            else:
-                # Send a invalid help command
-                await bot.send_message(ctx.message.channel, "Invalid command!")
-
+async def help(ctx, command = None):
+    result = vrs_help.get_help(command=command)
+    if result[0] == 0:
+        await reply(ctx,result[1])
+    elif result[0] == 1:
+        await reply(ctx,embed=result[1])
+       
 # Information about the bot itself
 @bot.command(pass_context=True)
 async def about(ctx):
     # Sends information about the bot to the channel
-    await bot.send_message(ctx.message.channel, vrs_utils.about())
+    await bot.send_message(ctx.message.channel, utils.about())
 
 # Provide information about the society
 @bot.command(pass_context=True)
 async def info(ctx):
     # Get the general information
-    gen_info = vrs_utils.gen_info()
+    gen_info = utils.gen_info()
     # Get the meeting information
-    meetings = vrs_utils.meet_info()
+    meetings = utils.meet_info()
     # Send the general and meeting information
     await bot.send_message(ctx.message.channel, embed=gen_info)
     await bot.send_message(ctx.message.channel, embed=meetings)
@@ -265,7 +229,7 @@ async def linkupdate(ctx, term, year, new_link):
     # Check role of the member for admin permissions
     if admin_id in [x.id for x in ctx.message.author.roles]:
         # Update Availability poll link
-        vrs_utils.update_poll_link(term, year, new_link)
+        utils.update_poll_link(term, year, new_link)
         # Send message to admin member about update success
         await bot.send_message(ctx.message.author, "You updated the availability poll link to {} {} --> {}".format(term, year, new_link))
     # Otherwise member is not an admin
@@ -292,9 +256,9 @@ async def linkupdate(ctx, term, year, new_link):
         await bot.delete_messages(msgs)
 
         # Get the general information
-        gen_info = vrs_utils.gen_info()
+        gen_info = utils.gen_info()
         # Get the meeting information
-        meetings = vrs_utils.meet_info()
+        meetings = utils.meet_info()
         # Send the general and meeting information
         await bot.send_message(general_info, embed=gen_info)
         await bot.send_message(general_info, embed=meetings)
@@ -305,11 +269,11 @@ async def addtinkertime(ctx, day, startTime, endTime):
     # Check role of the member for admin permissions
     if admin_id in [x.id for x in ctx.message.author.roles]:
         # Check for valid day of the week
-        if(vrs_utils.valid_day(day) == True):
+        if(utils.valid_day(day) == True):
             # Add the tinkering session to the text file
-            vrs_utils.add_tinker_time(day, startTime, endTime)
+            utils.add_tinker_time(day, startTime, endTime)
             # Send message to admin member about the successfully added tinker time
-            await bot.send_message(ctx.message.author, "You added a tinker time on {} from {} to {}".format(day, vrs_utils.setup_time(startTime), vrs_utils.setup_time(endTime)))
+            await bot.send_message(ctx.message.author, "You added a tinker time on {} from {} to {}".format(day, utils.setup_time(startTime), utils.setup_time(endTime)))
         # Otherwise invalid day was provided
         else:
             # Send message to admin member that the day for the tinker time is not valid
@@ -325,11 +289,11 @@ async def removetinkertime(ctx, day, startTime, endTime):
     # Check role of the member for admin permissions
     if admin_id in [x.id for x in ctx.message.author.roles]:
         # Check for valid day of the week
-        if(vrs_utils.valid_day(day) == True):
+        if(utils.valid_day(day) == True):
             # Add the tinkering session to the text file
-            vrs_utils.remove_tinker_time(day, startTime, endTime)
+            utils.remove_tinker_time(day, startTime, endTime)
             # Send message to admin member about the successfully removed tinker time
-            await bot.send_message(ctx.message.author, "You removed the tinker time on {} from {} to {}".format(day, vrs_utils.setup_time(startTime), vrs_utils.setup_time(endTime)))
+            await bot.send_message(ctx.message.author, "You removed the tinker time on {} from {} to {}".format(day, utils.setup_time(startTime), utils.setup_time(endTime)))
         # Otherwise invalid day was provided
         else:
             # Send message to admin member that the day for the tinker time is not valid
@@ -377,13 +341,25 @@ async def membercount(ctx):
             # Check if the current person has lab access
 
         # Format the role count information
-        roleInfo = vrs_utils.role_count(roles)
+        roleInfo = utils.role_count(roles)
 
         await bot.send_message(ctx.message.channel, embed=roleInfo)
     # Otherwise member is not an admin
     else:
         # Send permission denied message to non-admin member
         await bot.send_message(ctx.message.author, "You can't preform this command. Admin permission needed.")
+
+async def reply(ctx,msg=None,embed=None):
+    if ctx.message.channel:
+        if not embed:
+            await bot.send_message(ctx.message.channel,msg)
+        else:
+            await bot.send_message(ctx.message.channel,embed=embed)
+    else:
+        if not embed:
+            await bot.send_message(ctx.message.author,msg)
+        else:
+            await bot.send_message(ctx.message.author,embed=embed)
 
 # Run the discord client
 bot.run(token)
