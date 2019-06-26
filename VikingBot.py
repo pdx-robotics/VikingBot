@@ -36,9 +36,9 @@
 import discord, sys, os, inspect
 from discord.ext import commands
 
-dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-
-sys.path.insert(0,'Include')
+dir_main = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+dir_include = os.path.join(dir_main,'Include') 
+sys.path.insert(0,dir_include)
 import vrs_utils as utils
 import vrs_ids
 import vrs_text 
