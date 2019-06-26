@@ -1,9 +1,6 @@
 import os, sys, inspect, discord
 import vrs_ids, vrs_text
 
-#import inspect
-#print(inspect.getfile(inspect.currentframe()))
-#print(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))))
 textdir = 'Text'
 filehelp = 'command_help.txt'
 fileadmin = 'admin_commands.txt'
