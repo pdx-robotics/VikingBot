@@ -91,7 +91,7 @@ else:
 
 # Setup the logging of errors and print statements to log file
 utils.setup()
-vrs_help.help_setup(dir)
+vrs_help.help_setup(dir_main)
 # Create an instance of a discord bot
 bot = commands.Bot(command_prefix=vrs_ids.BOT_PREFIX)
 # Remove defualt help command
