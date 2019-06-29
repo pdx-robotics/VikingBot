@@ -43,6 +43,7 @@ import vrs_utils as utils
 import vrs_ids
 import vrs_text 
 import vrs_help
+from test_cog import test_cog
 
 #===============================================================================
 # Initial setup of the Discord chat bot
@@ -95,7 +96,7 @@ vrs_help.help_setup(dir_main)
 # Create an instance of a discord bot
 bot = commands.Bot(command_prefix=vrs_ids.BOT_PREFIX)
 # Remove defualt help command
-bot.remove_command('help')
+#bot.remove_command('help')
 
 # VikingBot startup message
 print("\n------\n")
@@ -174,14 +175,14 @@ async def ping(ctx):
     #await bot.say(":ping_pong: {} pong! =D".format(ctx.message.author.mention))
     await reply(ctx,f':ping_pong: {ctx.message.author.mention} pong! =D')
 
-# Display all of the supported commands
-@bot.command(pass_context=True)
-async def help(ctx, command = None):
-    result = vrs_help.get_help(command=command)
-    if result[0] == 0:
-        await reply(ctx,result[1])
-    elif result[0] == 1:
-        await reply(ctx,embed=result[1])
+#@bot.command(pass_context=True)
+## Display all of the supported commands
+#async def help(ctx, command = None):
+#    result = vrs_help.get_help(command=command)
+#    if result[0] == 0:
+#        await reply(ctx,result[1])
+#    elif result[0] == 1:
+#        await reply(ctx,embed=result[1])
        
 # Information about the bot itself
 @bot.command(pass_context=True)
@@ -361,5 +362,16 @@ async def reply(ctx,msg=None,embed=None):
         else:
             await bot.send_message(ctx.message.author,embed=embed)
 
+@bot.command(pass_context=True)
+async def test(ctx):
+    cog = bot.get_cog('test_cog')
+    c = cog.get_commands()
+    msg = 'Supported commands from test_cog:\n'
+    for cc in c:
+        msg+= cc.name + '\n'
+    await ctx.send(msg)
+    
+
+bot.add_cog(test_cog(bot))
 # Run the discord client
 bot.run(token)
