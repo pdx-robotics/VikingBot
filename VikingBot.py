@@ -33,7 +33,7 @@
 #
 #===============================================================================
 
-import discord, sys, os, inspect
+import discord, sys, os, inspect, requests
 from discord.ext import commands
 
 dir_main = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
@@ -43,6 +43,9 @@ import vrs_utils as utils
 import vrs_ids
 import vrs_text 
 import vrs_help
+
+url = "https://robotics.ece.pdx.edu/api/announcements.php"
+data = vrs_ids.data
 
 #===============================================================================
 # Initial setup of the Discord chat bot
@@ -69,6 +72,7 @@ if sys.argv[1] == '-t':
     # Initialize the used channel ids for the test server
     general_info_id = vrs_ids.ID_TEXT_GENERAL_INFO_TEST
     lobby_id = vrs_ids.ID_TEXT_LOBBY_TEST
+    announce_id = vrs_ids.ID_TEXT_ANNOUNCEMENTS_TEST
 # Check if the Discord bot is in 'run' mode
 elif sys.argv[1] == '-r':
     # Initialize bot token for assisting Viking Robotics Society server
@@ -83,6 +87,7 @@ elif sys.argv[1] == '-r':
     # Initialize the used channel ids for the Viking Robotics Society server
     general_info_id = vrs_ids.ID_TEXT_GENERAL_INFO
     lobby_id = vrs_ids.ID_TEXT_LOBBY
+    announce_id = vrs_ids.ID_TEXT_ANNOUNCEMENTS
 # Otherwise invalid argument provided
 else:
     # Display usage error
@@ -222,6 +227,20 @@ async def info(ctx):
 #                           (Member, Admin, Aquanautics, Terranuatics, Aeronuatics,
 #                           Lab Access)
 #===============================================================================
+
+# Make an announcement
+@bot.command(pass_context=True)
+async def announce(ctx, *, content:str):
+    print(content)
+    # Check role of the member for admin permissions
+    if admin_id in [x.id for x in ctx.message.author.roles]:
+        channel = bot.get_channel(announce_id)
+        data['data'] = content
+        requests.post(url,data)
+        await bot.send_message(channel, "@everyone\n"+content)
+    else:
+        await bot.reply("You can't perform this command.  Admin permission needed.")
+
 
 # Update Availability poll link
 @bot.command(pass_context=True)
