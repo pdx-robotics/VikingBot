@@ -21,6 +21,8 @@
 #                           the Vikings Robotic Society (VRS).
 #
 # Admin Commands:
+#           -> announce(ctx, *, content:str): sends message to announcement channel
+#                           and shares to website's announcement board    
 #           -> linkupdate(ctx, term, year, new_link): discord command for admin
 #                           usage to update the availability poll link on discord.
 #           -> addtinkertime(ctx, day, start, end): add tinkering time to
@@ -33,7 +35,8 @@
 #
 #===============================================================================
 
-import discord, sys, os, inspect, requests
+import discord, sys, os, inspect, aiohttp
+from io import BytesIO
 from discord.ext import commands
 
 dir_main = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
@@ -45,7 +48,6 @@ import vrs_text
 import vrs_help
 
 url = "https://robotics.ece.pdx.edu/api/announcements.php"
-data = vrs_ids.data
 
 #===============================================================================
 # Initial setup of the Discord chat bot
@@ -217,6 +219,8 @@ async def info(ctx):
 #           Send non-admin denied message for the command
 #
 # List of Admin Commands:
+#           -> announce(ctx, *, content:str): sends message to announcement channel
+#                           and shares to website's announcement board      
 #           -> linkupdate(ctx, term, year, new_link): discord command for admin
 #                           usage to update the availability poll link on discord.
 #           -> addtinkertime(ctx, day, start, end): add tinkering time to
@@ -228,16 +232,38 @@ async def info(ctx):
 #                           Lab Access)
 #===============================================================================
 
-# Make an announcement
+# Make an announcement that will be posted in #announcements and 
+# onto website's announcement board
+# Prepends @everyone mention to notify all on the server
+# This only handles a single attachment if any at all
 @bot.command(pass_context=True)
+# (ctx, *, content:str) stores all text after command invoke into next variable
 async def announce(ctx, *, content:str):
-    print(content)
     # Check role of the member for admin permissions
     if admin_id in [x.id for x in ctx.message.author.roles]:
+        # Grab AJAX format for data to send to website
+        d = vrs_ids.data.copy()
+        d['data'] = content
+        content = "@everyone\n"+content
         channel = bot.get_channel(announce_id)
-        data['data'] = content
-        requests.post(url,data)
-        await bot.send_message(channel, "@everyone\n"+content)
+
+        async with aiohttp.ClientSession() as session:
+            # if no attachment, then send announcement to Discord channel
+            if not ctx.message.attachments:
+                await bot.send_message(channel, content)
+            # if attachment, then retrieve file before sending to channel
+            else:
+                # store URL of attachment into AJAX for website to use
+                d['attachment'] = ctx.message.attachments[0]['url']
+                # retrieve attachment
+                async with session.get(d['attachment']) as resp:
+                    buffer = BytesIO(await resp.read())
+                    # send to channel
+                await bot.send_file(channel, fp=buffer, filename=ctx.message.attachments[0]['filename'], content=content)
+            
+            # send announcement data to website
+            session.post(url,data=d)
+            session.close()
     else:
         await bot.reply("You can't perform this command.  Admin permission needed.")
 
