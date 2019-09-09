@@ -240,7 +240,7 @@ async def info(ctx):
 # (ctx, *, content:str) stores all text after command invoke into next variable
 async def announce(ctx, *, content:str):
     # Check role of the member for admin permissions
-    if admin_id in [x.id for x in ctx.message.author.roles]:
+    if admin_id in [x.id for x in ctx.message.author.roles] and token is vrs_ids.TOKEN_VIKINGBOT:
         # Grab AJAX format for data to send to website
         d = vrs_ids.data.copy()
         d['data'] = content
@@ -265,7 +265,12 @@ async def announce(ctx, *, content:str):
             session.post(url,data=d)
             session.close()
     else:
-        await bot.reply("You can't perform this command.  Admin permission needed.")
+        if token is vrs_ids.TOKEN_TESTBOT:
+            msg = "This command has been disabled for Test_Bot"
+        else:
+            msg = "You can't perform this command.  Admin permission needed."
+        
+        await bot.reply(msg)
 
 
 # Update Availability poll link
