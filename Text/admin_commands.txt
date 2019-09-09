@@ -1,3 +1,4 @@
+announce
 updatelink
 addtinker
 removetinker
