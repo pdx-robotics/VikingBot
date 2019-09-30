@@ -2,6 +2,7 @@ help|help [command]|Get information about supported commands by this Discord bot
 about|about|Get link to source code for this Discord bot.
 info|info|Get information about Viking Robotics including contact information, website link, how to join, and more resources.
 ping|ping|Ping pong with the bot.
+announce|announce [content of message...]|Posts announcement in #announcements and announcements board on website
 linkupdate|linkupdate [term] [year] [link]|Update link for Availability poll.  Provide year and term the poll is meant for.  Link must start with **http://**.
 addtinker|addtinker [weekday] [start time] [end time]|Add a tinkering session time.  Times must be formatted as **XX:XX** in 24 hour time.
 removetinker|removetinker [weekday] [start time] [end time]|Remove a tinkering session time.  Times must be formatted as **XX:XX** in 24 hour time.

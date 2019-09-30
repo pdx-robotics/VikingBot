@@ -21,6 +21,8 @@
 #                           the Vikings Robotic Society (VRS).
 #
 # Admin Commands:
+#           -> announce(ctx, *, content:str): sends message to announcement channel
+#                           and shares to website's announcement board    
 #           -> linkupdate(ctx, term, year, new_link): discord command for admin
 #                           usage to update the availability poll link on discord.
 #           -> addtinkertime(ctx, day, start, end): add tinkering time to
@@ -33,7 +35,8 @@
 #
 #===============================================================================
 
-import discord, sys, os, inspect
+import discord, sys, os, inspect, aiohttp
+from io import BytesIO
 from discord.ext import commands
 
 dir_main = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
@@ -43,6 +46,8 @@ import vrs_utils as utils
 import vrs_ids
 import vrs_text 
 import vrs_help
+
+url = "https://robotics.ece.pdx.edu/api/announcements.php"
 
 #===============================================================================
 # Initial setup of the Discord chat bot
@@ -69,6 +74,7 @@ if sys.argv[1] == '-t':
     # Initialize the used channel ids for the test server
     general_info_id = vrs_ids.ID_TEXT_GENERAL_INFO_TEST
     lobby_id = vrs_ids.ID_TEXT_LOBBY_TEST
+    announce_id = vrs_ids.ID_TEXT_ANNOUNCEMENTS_TEST
 # Check if the Discord bot is in 'run' mode
 elif sys.argv[1] == '-r':
     # Initialize bot token for assisting Viking Robotics Society server
@@ -83,6 +89,7 @@ elif sys.argv[1] == '-r':
     # Initialize the used channel ids for the Viking Robotics Society server
     general_info_id = vrs_ids.ID_TEXT_GENERAL_INFO
     lobby_id = vrs_ids.ID_TEXT_LOBBY
+    announce_id = vrs_ids.ID_TEXT_ANNOUNCEMENTS
 # Otherwise invalid argument provided
 else:
     # Display usage error
@@ -212,6 +219,8 @@ async def info(ctx):
 #           Send non-admin denied message for the command
 #
 # List of Admin Commands:
+#           -> announce(ctx, *, content:str): sends message to announcement channel
+#                           and shares to website's announcement board      
 #           -> linkupdate(ctx, term, year, new_link): discord command for admin
 #                           usage to update the availability poll link on discord.
 #           -> addtinkertime(ctx, day, start, end): add tinkering time to
@@ -222,6 +231,47 @@ async def info(ctx):
 #                           (Member, Admin, Aquanautics, Terranuatics, Aeronuatics,
 #                           Lab Access)
 #===============================================================================
+
+# Make an announcement that will be posted in #announcements and 
+# onto website's announcement board
+# Prepends @everyone mention to notify all on the server
+# This only handles a single attachment if any at all
+@bot.command(pass_context=True)
+# (ctx, *, content:str) stores all text after command invoke into next variable
+async def announce(ctx, *, content:str):
+    # Check role of the member for admin permissions
+    if admin_id in [x.id for x in ctx.message.author.roles] and token is vrs_ids.TOKEN_VIKINGBOT:
+        # Grab AJAX format for data to send to website
+        d = vrs_ids.data.copy()
+        d['data'] = content
+        content = "@everyone\n"+content
+        channel = bot.get_channel(announce_id)
+
+        async with aiohttp.ClientSession() as session:
+            # if no attachment, then send announcement to Discord channel
+            if not ctx.message.attachments:
+                await bot.send_message(channel, content)
+            # if attachment, then retrieve file before sending to channel
+            else:
+                # store URL of attachment into AJAX for website to use
+                d['attachment'] = ctx.message.attachments[0]['url']
+                # retrieve attachment
+                async with session.get(d['attachment']) as resp:
+                    buffer = BytesIO(await resp.read())
+                    # send to channel
+                await bot.send_file(channel, fp=buffer, filename=ctx.message.attachments[0]['filename'], content=content)
+            
+            # send announcement data to website
+            session.post(url,data=d)
+            session.close()
+    else:
+        if token is vrs_ids.TOKEN_TESTBOT:
+            msg = "This command has been disabled for Test_Bot"
+        else:
+            msg = "You can't perform this command.  Admin permission needed."
+        
+        await bot.reply(msg)
+
 
 # Update Availability poll link
 @bot.command(pass_context=True)
